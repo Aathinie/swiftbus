@@ -113,9 +113,9 @@ def create_bus(win, db, cursor, refresh_callback):
 
     brand_select.grid(row=16, column=1, sticky="w", rowspan=2)
 
-    # brand_var.set(
-    #     list(style_name_id_map.keys())[list(style_name_id_map.values()).index(0)]
-    # )
+    brand_var.set(
+        list(brand_name_id_map.keys())[list(brand_name_id_map.values()).index(0)]
+    )
 
     #####
 

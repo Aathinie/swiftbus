@@ -8,6 +8,7 @@ from admin.users.page import UsersPage
 from admin.brands.page import BrandsPage
 from admin.bus.page import BusPage
 from admin.locations.page import LocationsPage
+from admin.routes.page import RoutesPage
 
 from backend import *
 
@@ -35,7 +36,7 @@ def config_navigator(win, pages):
 def main():
     window = make_window()
 
-    PAGES = [TableSelectPage, UsersPage, BrandsPage, BusPage, LocationsPage]
+    PAGES = [TableSelectPage, UsersPage, BrandsPage, BusPage, LocationsPage, RoutesPage]
     nav = config_navigator(window, PAGES)
 
     nav.navigate_to("tableselect")

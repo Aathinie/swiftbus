@@ -12,19 +12,31 @@ from utils import encrypt
 #   jounreyTimeHrs varchar(255) not null unique,
 
 
-
-def fetch_brands(cursor):
-    cursor.execute("select * from brands")
+def fetch_routes(cursor):
+    cursor.execute("select * from routes")
     return cursor.fetchall()
 
 
-def fetch_brand_by_id(cursor, id):
-    cursor.execute(f"select * from brands where uid='{id}'")
+def fetch_route_by_id(cursor, id):
+    cursor.execute(f"select * from routes where uid='{id}'")
     return cursor.fetchone()
 
 
-def handle_sql_create(window, db, cursor, uid, name, logo, refresh_callback):
-    if not (len(uid) or len(name) or len(logo)):
+def handle_sql_create(
+    window,
+    db,
+    cursor,
+    uid,
+    source,
+    destination,
+    distance,
+    busID,
+    days,
+    timings,
+    journeyTimeHrs,
+    refresh_callback,
+):
+    if not (len(uid) or len(source) or len(destination) or len(days)):
         err = ctk.CTkToplevel(window)
         err.title("SwiftBus Admin - Error")
         err.geometry("200x100")
@@ -37,13 +49,13 @@ def handle_sql_create(window, db, cursor, uid, name, logo, refresh_callback):
 
     try:
         cursor.execute(
-            f'insert into brands (uid, name, logo) values ("{uid}", "{name}", "{logo}")'
+            f'insert into routes (uid, source, destination, distance, busID, days, timings, journeyTimeHrs) values ("{uid}", "{source}", "{destination}", {distance}, "{busID}", "{days}", "{timings}","{journeyTimeHrs}")'
         )
 
         db.commit()
 
         window.destroy()
-        refresh_callback(fetch_brands(cursor))
+        refresh_callback(fetch_routes(cursor))
 
     except mysql.connector.Error as err:
         return print(err)
@@ -51,8 +63,21 @@ def handle_sql_create(window, db, cursor, uid, name, logo, refresh_callback):
     return True
 
 
-def handle_sql_edit(window, db, cursor, uid, name, logo, refresh_callback):
-    if not (len(uid) or len(name) or len(logo)):
+def handle_sql_edit(
+    window,
+    db,
+    cursor,
+    uid,
+    source,
+    destination,
+    distance,
+    busID,
+    days,
+    timings,
+    journeyTimeHrs,
+    refresh_callback,
+):
+    if not (len(uid) or len(source) or len(destination) or len(days)):
         err = ctk.CTkToplevel(window)
         err.title("SwiftBus Admin - Error")
         err.geometry("200x100")
@@ -65,13 +90,12 @@ def handle_sql_edit(window, db, cursor, uid, name, logo, refresh_callback):
 
     try:
         cursor.execute(
-            f'update brands set name="{name}", logo="{logo}" where uid="{uid}"'
+            f'update routes set source="{source}", destination="{destination}", distance={distance}, busID="{busID}", days ="{days}", timings="{timings}", journeyTimeHrs="{journeyTimeHrs}" where uid="{uid}"'
         )
-
         db.commit()
 
         window.destroy()
-        refresh_callback(fetch_brands(cursor))
+        refresh_callback(fetch_routes(cursor))
 
     except mysql.connector.Error as err:
         return print(err)
@@ -84,10 +108,9 @@ def handle_sql_delete(db, cursor, uid, refresh_callback):
         cursor.execute(f'delete from brands where uid="{uid}"')
 
         db.commit()
-        refresh_callback(fetch_brands(cursor))
+        refresh_callback(fetch_routes(cursor))
 
     except mysql.connector.Error as err:
         return print(err)
 
     return True
-

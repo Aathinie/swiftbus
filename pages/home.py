@@ -3,6 +3,25 @@ import customtkinter as ctk
 from widgets.image import load_image_ctk, ImageButton
 from widgets.search import SearchBox
 from widgets.ctkcalendar import DateSelectWidget
+from admin.locations.api import *
+from backend import cursor
+
+
+def search_routes(source, destination, date, adults, children, nav):
+    if not (
+        len(source) and len(destination) and len(date) and len(adults) and len(children)
+    ):
+        return
+
+    cursor.execute(f"select uid from locations where name='{source}'")
+    sourceid = cursor.fetchone()[0]
+
+    cursor.execute(f"select uid from locations where name='{destination}'")
+    destinationid = cursor.fetchone()[0]
+
+    with open("data", "w") as f:
+        f.write(f"{sourceid}\n{source}\n{destinationid}\n{destination}\n{date}\n{adults}\n{children}")
+    nav.navigate_to("results")
 
 
 def HomePage(win):
@@ -39,7 +58,14 @@ def HomePage(win):
 
     ####
 
-    source_widget, source_var = SearchBox(search, "Source", [])
+    # make locations list
+    locations = fetch_locations(cursor)
+    places = []
+
+    for location in locations:
+        places.append(location[1])
+
+    source_widget, source_var = SearchBox(search, "Source", places)
     source_widget.grid(row=1, column=1, sticky="w")
 
     def handle_swap():
@@ -53,7 +79,7 @@ def HomePage(win):
     )
     swap.grid(row=1, column=2, sticky="s")
 
-    dest_widget, dest_var = SearchBox(search, "Destination", [])
+    dest_widget, dest_var = SearchBox(search, "Destination", places)
     dest_widget.grid(row=1, column=3, sticky="w")
 
     ####
@@ -109,7 +135,15 @@ def HomePage(win):
         image=load_image_ctk("./assets/search_icon.png", (25, 0)),
         width=900,
         height=50,
-        font=("Roboto", 16)
+        font=("Roboto", 16),
+        command=lambda: search_routes(
+            source_var.get(),
+            dest_var.get(),
+            departure_stringvar.get(),
+            adult_count_entry.get(),
+            child_count_entry.get(),
+            win.navigator,
+        ),
     )
     find.grid(row=4, column=1, columnspan=3, sticky="nw", pady=20)
 

@@ -1,21 +1,29 @@
 import customtkinter as ctk
-from admin.brands.api import *
+from admin.routes.api import *
 from tkinter.filedialog import askopenfilename
-from widgets.image_preview import ImagePreview
+from widgets.dropselect import DropSelect
 import uuid
 
-def create_brand(win, db, cursor, refresh_callback):
+selected_days = []
+day_buttons = []
+
+
+def create_route(win, db, cursor, refresh_callback):
+    global selected_days, day_buttons
+    selected_days = []
+    day_buttons = []
+
     window = ctk.CTkToplevel()
     window.transient(win)
-    window.title("SwiftBus Admin - Create Brand")
-    window.geometry("500x500")
+    window.title("SwiftBus Admin - Create Route")
+    window.geometry("500x900")
 
     uid = uuid.uuid4()  # generate universal unique identifier
 
     form_frame = ctk.CTkFrame(master=window, width=400, fg_color="transparent")
 
     ctk.CTkLabel(
-        master=form_frame, text="Create Brand", font=("Roboto", 16, "bold")
+        master=form_frame, text="Create Route", font=("Roboto", 16, "bold")
     ).grid(row=0, column=1, sticky="we")
 
     id_label = ctk.CTkLabel(master=form_frame, text="ID", font=("Roboto", 14))
@@ -30,47 +38,140 @@ def create_brand(win, db, cursor, refresh_callback):
     id_label.grid(row=1, column=1, sticky="w")
     id_entry.grid(row=2, column=1, sticky="we")
 
-    name_label = ctk.CTkLabel(master=form_frame, text="Name", font=("Roboto", 14))
-    name_entry = ctk.CTkEntry(
-        master=form_frame, width=400, height=40, font=("Roboto", 16)
+    #####
+
+    source_var = ctk.StringVar(master=form_frame)
+    source_select, source_name_id_map = DropSelect(
+        form_frame,
+        cursor,
+        "Source",
+        "locations",
+        "uid",
+        "name",
+        source_var,
     )
-    name_label.grid(row=4, column=1, sticky="w")
-    name_entry.grid(row=5, column=1, sticky="we")
+
+    source_select.grid(row=4, column=1, sticky="w", rowspan=2)
+
+    # source_var.set(
+    #     list(source_name_id_map.keys())[list(source_name_id_map.values()).index(0)]
+    # )
 
     #####
 
-    def get_image(store, callback):
-        store.set(askopenfilename(filetypes=[("Image Files", ".png .jpg .jpeg")]))
-        callback(store.get())
-
-    brand_image_label = ctk.CTkLabel(master=form_frame, text="Logo")
-    brand_image_select = ctk.CTkFrame(master=form_frame, fg_color="transparent")
-    brand_image_preview, brand_preview_set = ImagePreview(
-        brand_image_select, 50, None
+    dest_var = ctk.StringVar(master=form_frame)
+    dest_select, dest_name_id_map = DropSelect(
+        form_frame,
+        cursor,
+        "Destination",
+        "locations",
+        "uid",
+        "name",
+        dest_var,
     )
 
-    brand_image_store = ctk.StringVar(value=None, name="brand_image_store")
+    dest_select.grid(row=7, column=1, sticky="w", rowspan=2)
 
-    brand_image_button = ctk.CTkButton(
-        master=brand_image_select,
-        text="Select Image",
-        width=100,
-        height=40,
+    # dest_var.set(
+    #     list(dest_name_id_map.keys())[list(dest_name_id_map.values()).index(0)]
+    # )
+
+    #####
+
+    bus_var = ctk.StringVar(master=form_frame)
+    bus_select, bus_name_id_map = DropSelect(
+        form_frame,
+        cursor,
+        "Bus",
+        "bus",
+        "uid",
+        "name",
+        bus_var,
+    )
+
+    bus_select.grid(row=10, column=1, sticky="w", rowspan=2)
+
+    # bus_var.set(list(bus_name_id_map.keys())[list(bus_name_id_map.values()).index(0)])
+
+    #####
+
+    timing_label = ctk.CTkLabel(
+        master=form_frame,
+        text="Timings [24 hour format, seperated by ;]",
         font=("Roboto", 16),
-        command=lambda: get_image(brand_image_store, brand_preview_set),
     )
 
-    brand_image_preview.grid(row=1, column=1, sticky="w")
-    brand_image_button.grid(row=1, column=2, sticky="w")
+    timing_entry = ctk.CTkEntry(
+        master=form_frame, width=400, height=40, font=("Roboto", 16)
+    )
+    timing_label.grid(row=13, column=1, sticky="w")
+    timing_entry.grid(row=14, column=1, sticky="w")
 
-    brand_image_label.grid(row=7, column=1, sticky="w")
-    brand_image_select.grid(row=8, column=1, sticky="w")
+    #####
+
+    row = ctk.CTkFrame(master=form_frame, fg_color="#F2F2F2", width=400, height=60)
+
+    distance_label = ctk.CTkLabel(master=row, text="Distance", font=("Roboto", 16))
+    distance_entry = ctk.CTkEntry(master=row, width=180, height=40, font=("Roboto", 16))
+    distance_label.grid(row=1, column=1, sticky="w")
+    distance_entry.grid(row=2, column=1, sticky="w")
+
+    #####
+
+    journey_time_label = ctk.CTkLabel(
+        master=row, text="Journey Time [hours]", font=("Roboto", 16)
+    )
+
+    journey_time_entry = ctk.CTkEntry(
+        master=row, width=180, height=40, font=("Roboto", 16)
+    )
+    journey_time_label.grid(row=1, column=2, sticky="w", padx=10)
+    journey_time_entry.grid(row=2, column=2, sticky="w", padx=10)
+
+    row.grid(row=16, column=1, sticky="w", rowspan=2)
+
+    #####
+
+
+    days_label = ctk.CTkLabel(master=form_frame, text="Days", font=("Roboto", 16))
+    days_row = ctk.CTkFrame(master=form_frame, width=400, height=50, fg_color="#F2F2F2")
+
+    for idx, d in enumerate(["Su", "M", "Tu", "W", "Th", "F", "Sa"]):
+
+        def onclick(index, day):
+            if day in selected_days:
+                selected_days.pop(selected_days.index(day))
+                day_buttons[index].configure(fg_color="#BCBCBC", hover_color="#BCBCBC")
+            else:
+                selected_days.append(day)
+                day_buttons[index].configure(fg_color="#3b8ed0", hover_color="#3b8ed0")
+
+        day_btn = ctk.CTkButton(
+            master=days_row,
+            text=d,
+            height=50,
+            width=50,
+            fg_color="#BCBCBC",
+            hover_color="#BCBCBC",
+            command=lambda x=idx, y=d: onclick(x, y),
+        )
+
+        day_buttons.append(day_btn)
+
+        day_btn.grid(
+            row=1,
+            column=idx + 1,
+            padx=4.1,
+        )
+
+    days_label.grid(row=19, column=1, sticky="w")
+    days_row.grid(row=20, column=1, sticky="w")
 
     #####
 
     submit = ctk.CTkButton(
         master=form_frame,
-        text="Create Brand",
+        text="Create Route",
         height=40,
         text_color="#ffffff",
         command=lambda: handle_sql_create(
@@ -78,15 +179,20 @@ def create_brand(win, db, cursor, refresh_callback):
             db,
             cursor,
             str(uid),
-            name_entry.get().strip(),
-            brand_image_store.get().strip(),
+            source_name_id_map[source_var.get()],
+            dest_name_id_map[dest_var.get()],
+            distance_entry.get(),
+            bus_name_id_map[bus_var.get()],
+            ";".join(selected_days),
+            timing_entry.get(),
+            journey_time_entry.get(),
             refresh_callback,
         ),
     )
 
-    submit.grid(row=13, column=1, sticky="we")
+    submit.grid(row=22, column=1, sticky="we")
 
-    for i in [3, 6, 9, 12]:
+    for i in [3, 6, 9, 12, 15, 18, 21]:
         form_frame.rowconfigure(i, minsize=20)
 
     form_frame.place(relx=0.5, rely=0.5, anchor="center")

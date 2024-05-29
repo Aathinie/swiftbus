@@ -1,12 +1,12 @@
 import customtkinter as ctk
 from widgets.table import Table
 from widgets.image import load_image_ctk
-from admin.brands.api import *
-from admin.brands.edit import edit_brand
-from admin.brands.create import create_brand
+from admin.routes.api import *
+from admin.routes.edit import edit_route
+from admin.routes.create import create_route
 
 
-def BrandsPage(win, db, cursor):
+def RoutesPage(win, db, cursor):
     page = ctk.CTkFrame(
         master=win, width=1200, height=720, bg_color="#ececec", fg_color="#ececec"
     )
@@ -19,12 +19,17 @@ def BrandsPage(win, db, cursor):
         page,
         "Routes",
         [
-            ("ID", 300),
-            ("Name", 300),
-            ("[IMAGE]Logo", 300),
+            ("ID", 50),
+            ("[GETNAME:name,locations]Source", 100),
+            ("[GETNAME:name,locations]Destination", 100),
+            ("Distance", 100),
+            ("[GETNAME:name,bus]Bus", 200),
+            ("Days", 200),
+            ("Timings", 100),
+            ("Duration", 50),
         ],
-        fetch_brands(cursor),
-        edit_brand,
+        fetch_routes(cursor),
+        edit_route,
         handle_sql_delete,
         db,
         cursor,
@@ -36,11 +41,11 @@ def BrandsPage(win, db, cursor):
     add_brand = ctk.CTkButton(
         master=action_row,
         text="+  Add Route",
-        command=lambda: create_brand(win, db, cursor, refersh_callback),
+        command=lambda: create_route(win, db, cursor, refersh_callback),
     )
 
     def reload_func():
-        return refersh_callback(fetch_brands(cursor))
+        return refersh_callback(fetch_routes(cursor))
 
     refresh = ctk.CTkButton(
         master=action_row,
@@ -75,4 +80,4 @@ def BrandsPage(win, db, cursor):
 
     table.pack(pady=10)
 
-    return "brands", page
+    return "routes", page

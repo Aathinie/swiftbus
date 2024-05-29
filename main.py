@@ -6,6 +6,7 @@ from utils import correct_path
 from pages.login import LoginPage
 from pages.singup import SingupPage
 from pages.home import HomePage
+from pages.results import ResultsPage
 
 def make_window():
     window = ctk.CTk()
@@ -45,10 +46,13 @@ def main():
     PAGES = [
         LoginPage,
         SingupPage,
-        HomePage
+        HomePage,
+        ResultsPage
     ]
-    nav = config_navigator(window, PAGES)
 
+    nav = config_navigator(window, PAGES)
+    window.navigator = nav
+    
     nav.navigate_to("home")
 
     window.mainloop()
