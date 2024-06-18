@@ -77,6 +77,7 @@ create table bookings (
   adults int not null,
   children int not null,
   journeyDate date not null,
+  seats varchar(256),
   primary key (uid)
 )
 """

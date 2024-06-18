@@ -1,10 +1,12 @@
 import customtkinter as ctk
 from backend import cursor
+from widgets.image import load_image_ctk
 import datetime
+from widgets.bus_card import BusCard
 
 
 def ResultsPage(win):
-    page = ctk.CTkFrame(master=win, width=1200, height=600, fg_color="white")
+    page = ctk.CTkFrame(master=win, width=1200, height=600, fg_color="#EDEDED")
     page.pack_propagate(0)
 
     source = destination = date = adults = children = None
@@ -27,74 +29,49 @@ def ResultsPage(win):
 
         search_results = cursor.fetchall()
 
-        showing_label.configure(
-            text=f"Showing busses from {source} to {destination} on {date}"
+        ###
+        nav = ctk.CTkFrame(master=page, width=900, fg_color="#EDEDED")
+
+        logo = ctk.CTkLabel(
+            master=nav, text="", image=load_image_ctk("./assets/logo.png", (200, 0))
+        )
+        logo.grid(row=1, column=1, padx=40)
+        
+        back = ctk.CTkButton(master=nav, text="< Back", command=lambda:win.navigator.navigate_to("home"))
+        back.grid(row=1, column=3, padx=40, sticky="ne")
+
+        nav.columnconfigure(2, minsize=700)
+        nav.grid(row=1, column=1, padx=20, pady=20)
+        ###
+
+        data = []
+
+        for result in search_results:
+            uid, _, _, dist, bus, _, timings, jounreyTimeHrs = result
+            data.append((uid, dist, bus, timings, jounreyTimeHrs))
+
+        n = 1
+
+        results = ctk.CTkFrame(
+            master=page,
         )
 
         for (
             uid,
-            _src,
-            _dest,
             dist,
             bus,
-            days,
             timings,
             jounreyTimeHrs,
-        ) in search_results:
+        ) in data:
             timings = timings.split(";")
 
             for timing in timings:
-                detail_frame = ctk.CTkFrame(
-                    master=page,
-                    width=1000,
-                    bg_color="#e0e0e0",
+                card = BusCard(
+                    cursor, results, uid, source, destination, dist, timing, bus, win
                 )
-                source_frame = ctk.CTkFrame(master=detail_frame)
-                ctk.CTkLabel(
-                    master=source_frame, text="Source", font=("Roboto", 16, "bold")
-                ).grid(row=1, column=1, sticky="w")
-                ctk.CTkLabel(
-                    master=source_frame,
-                    text=source.strip(),
-                    font=("Roboto", 24, "bold"),
-                ).grid(row=2, column=1, sticky="w")
+                card.grid(row=n, column=1, sticky="we", pady=10)
+                n += 1
 
-                dest_frame = ctk.CTkFrame(master=detail_frame)
-                ctk.CTkLabel(
-                    master=dest_frame, text="Destination", font=("Roboto", 16, "bold")
-                ).grid(row=1, column=1, sticky="w")
-                ctk.CTkLabel(
-                    master=dest_frame,
-                    text=destination.strip(),
-                    font=("Roboto", 24, "bold"),
-                ).grid(row=2, column=1, sticky="w")
-
-                distance_frame = ctk.CTkFrame(master=detail_frame)
-                ctk.CTkLabel(
-                    master=distance_frame, text="Distance", font=("Roboto", 16, "bold")
-                ).grid(row=1, column=1, sticky="w")
-                ctk.CTkLabel(
-                    master=distance_frame, text=dist, font=("Roboto", 24, "bold")
-                ).grid(row=2, column=1, sticky="w")
-
-                timing_frame = ctk.CTkFrame(master=detail_frame)
-                ctk.CTkLabel(
-                    master=timing_frame, text="Timing", font=("Roboto", 16, "bold")
-                ).grid(row=1, column=1, sticky="w")
-                ctk.CTkLabel(
-                    master=timing_frame,
-                    text=timing.strip(),
-                    font=("Roboto", 24, "bold"),
-                ).grid(row=2, column=1, sticky="w")
-
-                source_frame.grid(row=1, column=1, padx=20)
-                dest_frame.grid(row=1, column=2, padx=20)
-                distance_frame.grid(row=1, column=3, padx=20)
-                timing_frame.grid(row=1, column=4, padx=20)
-
-                detail_frame.pack(pady=10)
-
-    showing_label = ctk.CTkLabel(master=page, text="", font=("Roboto", 20))
-    showing_label.pack(anchor="n", pady=30)
+        results.grid(row=2, column=1)
 
     return "results", page, on_mount, lambda: None

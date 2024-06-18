@@ -7,6 +7,13 @@ from pages.login import LoginPage
 from pages.singup import SingupPage
 from pages.home import HomePage
 from pages.results import ResultsPage
+from pages.seat_select import SeatSelect
+from pages.passenger_info import PassengerInfo
+from pages.tickets import ConfirmTicket
+from pages.payment_slct import SelectPaymentMethod
+from pages.upi_pay import PayUPI
+from pages.card_pay import PayCard
+from pages.success import Success
 
 def make_window():
     window = ctk.CTk()
@@ -47,11 +54,19 @@ def main():
         LoginPage,
         SingupPage,
         HomePage,
-        ResultsPage
+        ResultsPage,
+        SeatSelect,
+        PassengerInfo,
+        ConfirmTicket,
+        SelectPaymentMethod,
+        PayCard,
+        PayUPI,
+        Success
     ]
 
     nav = config_navigator(window, PAGES)
     window.navigator = nav
+    window.selected_seats = []
     
     nav.navigate_to("home")
 

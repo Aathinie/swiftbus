@@ -10,9 +10,9 @@ def edit_bus(win, db, cursor, _id, refresh_callback):
     window = ctk.CTkToplevel()
     window.transient(win)
     window.title("SwiftBus Admin - Edit Bus")
-    window.geometry("500x500")
+    window.geometry("500x700")
 
-    uid, name, brand, description, image, perkm, seats = fetch_bus_by_id(_id)
+    uid, name, brand, description, image, perkm, seats = fetch_bus_by_id(cursor, _id)
 
     form_frame = ctk.CTkFrame(master=window, width=400, fg_color="transparent")
 
@@ -126,7 +126,7 @@ def edit_bus(win, db, cursor, _id, refresh_callback):
 
     submit = ctk.CTkButton(
         master=form_frame,
-        text="Create Bus",
+        text="Edit Bus",
         height=40,
         text_color="#ffffff",
         command=lambda: handle_sql_create(
